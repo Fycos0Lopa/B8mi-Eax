@@ -1,0 +1,36 @@
+name: Build B8mi Eax (Windows x64)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Checkout JUCE
+        uses: actions/checkout@v4
+        with:
+          repository: juce-framework/JUCE
+          ref: 8.0.10
+          path: JUCE
+
+      - name: Configure
+        run: cmake -S . -B build "-DJUCE_DIR=${{ github.workspace }}\JUCE" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: B8mi-Eax-Windows-x64
+          path: |
+            build//VST3/
+            build/**/*Standalone*.exe
+          if-no-files-found: error
+          retention-days: 14
